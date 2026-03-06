@@ -110,13 +110,14 @@ begin
         report "Final PM_ADR: " & to_string(pm_adr);
         report "============================================";
 
-        -- Verify processor reached halt loop (PC = 36 = 0x0024)
-        if pm_adr = "000000000100100" or pm_adr = "000000000100011" then
-            report "PASS: Processor reached halt loop at expected PC" severity note;
-        else
-            report "INFO: Final PC = " & integer'image(to_integer(unsigned(pm_adr)))
-                severity note;
-        end if;
+        -- PM_ADR is the current fetch address, so the halt self-jump can settle
+        -- on the jump itself (36) or the following fetch slot (37).
+        assert pm_adr = "000000000100100" or pm_adr = "000000000100101"
+            report "FAIL: Expected halt loop fetch PC 36 or 37, got "
+                & integer'image(to_integer(unsigned(pm_adr)))
+            severity failure;
+        report "PASS: Processor reached halt loop at expected fetch PC"
+            severity note;
 
         wait for CLK_PERIOD * 10;
         std.env.stop;

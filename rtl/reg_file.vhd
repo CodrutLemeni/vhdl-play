@@ -43,8 +43,10 @@ begin
 
     -- Combinational read with write-through
     oRD_A_DATA <= iWR_DATA when (iWR_EN = '1' and iWR_ADDR = iRD_A_ADDR) else
-                  regs(to_integer(unsigned(iRD_A_ADDR)));
+                  regs(to_integer(unsigned(iRD_A_ADDR))) when not is_x(iRD_A_ADDR) else
+                  (others => '0');
     oRD_B_DATA <= iWR_DATA when (iWR_EN = '1' and iWR_ADDR = iRD_B_ADDR) else
-                  regs(to_integer(unsigned(iRD_B_ADDR)));
+                  regs(to_integer(unsigned(iRD_B_ADDR))) when not is_x(iRD_B_ADDR) else
+                  (others => '0');
 
 end architecture rtl;

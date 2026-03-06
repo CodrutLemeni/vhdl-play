@@ -485,7 +485,7 @@ begin
                 when BR_CALL =>
                     ex1_branch_taken <= '1';
                     pcs_push <= '1';
-                    pcs_in   <= std_logic_vector(unsigned(id_ex1_r.pc) + 1);
+                    pcs_in   <= id_ex1_r.pc;
                     if id_ex1_r.ctrl.fmt = FMT_K then
                         ex1_branch_target <= unsigned(id_ex1_r.ctrl.imm(PM_ADR_W-1 downto 0));
                     else
@@ -495,7 +495,7 @@ begin
                 when BR_CALLI =>
                     ex1_branch_taken <= '1';
                     pcs_push <= '1';
-                    pcs_in   <= std_logic_vector(unsigned(id_ex1_r.pc) + 1);
+                    pcs_in   <= id_ex1_r.pc;
                     fs_push  <= '1';
                     if id_ex1_r.ctrl.fmt = FMT_K then
                         ex1_branch_target <= unsigned(id_ex1_r.ctrl.imm(PM_ADR_W-1 downto 0));
@@ -507,7 +507,7 @@ begin
                     ex1_branch_taken <= '1';
                     ex1_is_delayed   <= '1';
                     pcs_push <= '1';
-                    pcs_in   <= std_logic_vector(unsigned(id_ex1_r.pc) + 3);
+                    pcs_in   <= std_logic_vector(unsigned(id_ex1_r.pc) + 2);
                     if id_ex1_r.ctrl.fmt = FMT_K then
                         ex1_branch_target <= unsigned(id_ex1_r.ctrl.imm(PM_ADR_W-1 downto 0));
                     else
@@ -518,7 +518,7 @@ begin
                     ex1_branch_taken <= '1';
                     ex1_is_delayed   <= '1';
                     pcs_push <= '1';
-                    pcs_in   <= std_logic_vector(unsigned(id_ex1_r.pc) + 3);
+                    pcs_in   <= std_logic_vector(unsigned(id_ex1_r.pc) + 2);
                     fs_push  <= '1';
                     if id_ex1_r.ctrl.fmt = FMT_K then
                         ex1_branch_target <= unsigned(id_ex1_r.ctrl.imm(PM_ADR_W-1 downto 0));
