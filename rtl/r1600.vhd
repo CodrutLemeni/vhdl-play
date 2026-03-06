@@ -72,6 +72,7 @@ architecture rtl of r1600 is
     ---------------------------------------------------------------------------
     signal pipe_stall     : std_logic := '0';
     signal hazard_stall   : std_logic := '0';
+    signal mem_started    : std_logic := '0';
 
     ---------------------------------------------------------------------------
     -- Decoder output
@@ -290,9 +291,9 @@ begin
                     else '0';
 
     ---------------------------------------------------------------------------
-    -- Pipeline stall (memory wait OR hazard)
+    -- Pipeline stall (memory wait OR hazard OR initial memory request)
     ---------------------------------------------------------------------------
-    pipe_stall <= mc_stall or hazard_stall;
+    pipe_stall <= mc_stall or hazard_stall or mc_mem_read or mc_mem_write;
 
     ---------------------------------------------------------------------------
     -- PC logic
@@ -418,12 +419,26 @@ begin
                when id_ex1_r.ctrl.mem_read = '1' or id_ex1_r.ctrl.mem_write = '1'
                else (others => '0');
 
-    -- Memory control signals
+    -- Memory control signals (fire only once per memory instruction)
     mc_mem_read  <= id_ex1_r.ctrl.mem_read and id_ex1_r.exec_en and id_ex1_r.valid
-                    and (not mc_busy);
+                    and (not mc_busy) and (not mem_started);
     mc_mem_write <= id_ex1_r.ctrl.mem_write and id_ex1_r.exec_en and id_ex1_r.valid
-                    and (not mc_busy);
+                    and (not mc_busy) and (not mem_started);
     mc_wr_data   <= id_ex1_r.rt_data;
+
+    -- Track whether the memory operation for the current EX1 instruction has started
+    process(iCLK)
+    begin
+        if rising_edge(iCLK) then
+            if iRST = '1' then
+                mem_started <= '0';
+            elsif pipe_stall = '0' then
+                mem_started <= '0';  -- new instruction entering EX1
+            elsif mc_mem_read = '1' or mc_mem_write = '1' then
+                mem_started <= '1';  -- operation initiated, prevent re-trigger
+            end if;
+        end if;
+    end process;
 
     -- Detect if this EX1 instruction pops flags (for pipeline capture)
     ex1_pop_flags <= '1' when id_ex1_r.valid = '1' and id_ex1_r.exec_en = '1'
@@ -643,7 +658,8 @@ begin
                 ex2_wb_r.pop_if  <= ex1_ex2_r.pop_if;
 
                 -- Result mux: memory read data or ALU result
-                if ex1_ex2_r.ctrl.mem_read = '1' and mc_rd_valid = '1' then
+                -- Pipeline stall guarantees mc_rd_data is valid when instruction reaches EX2
+                if ex1_ex2_r.ctrl.mem_read = '1' then
                     ex2_wb_r.result <= mc_rd_data;
                 else
                     ex2_wb_r.result <= ex1_ex2_r.alu_result;

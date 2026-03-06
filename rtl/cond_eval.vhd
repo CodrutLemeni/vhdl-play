@@ -37,9 +37,9 @@ begin
             when COND_IFNC =>
                 oEXEC_EN <= not iCF;
             when COND_IFG =>
-                oEXEC_EN <= (not iCF) and (not iZF);
+                oEXEC_EN <= iCF and (not iZF);  -- CF=NOT borrow: CF=1 means no borrow (A>=B)
             when COND_IFNG =>
-                oEXEC_EN <= iCF or iZF;
+                oEXEC_EN <= (not iCF) or iZF;   -- CF=0 means borrow (A<B), or ZF=1 (A=B)
             when others =>
                 oEXEC_EN <= '0';
         end case;

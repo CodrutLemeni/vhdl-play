@@ -118,9 +118,8 @@ begin
     oDM_WE_A <= '1' when (state = ST_WRITE_WAIT and bank_sel = '0') else '0';
     oDM_WE_B <= '1' when (state = ST_WRITE_WAIT and bank_sel = '1') else '0';
 
-    -- Stall when waiting for RDY
-    oSTALL <= '1' when (state = ST_READ_WAIT and iDM_RDY = '0') or
-                        (state = ST_WRITE_WAIT and iDM_RDY = '0') else '0';
+    -- Stall while any memory operation is in progress
+    oSTALL <= '1' when state /= ST_IDLE else '0';
 
     -- Busy when any memory operation is active
     oBUSY <= '1' when state /= ST_IDLE else '0';

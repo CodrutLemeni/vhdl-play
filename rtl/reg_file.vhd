@@ -25,7 +25,7 @@ entity reg_file is
 end entity reg_file;
 
 architecture rtl of reg_file is
-    type reg_array_t is array(0 to STACK_DEPTH-1) of std_logic_vector(DATA_W-1 downto 0);
+    type reg_array_t is array(0 to 2**REG_ADR_W-1) of std_logic_vector(DATA_W-1 downto 0);
     signal regs : reg_array_t := (others => (others => '0'));
 begin
 
